@@ -1,4 +1,5 @@
 from subprocess import run
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def check_range(pattern: list[int], position: int = -1, start_val: int = 0, end_val: int = 1) -> None:
@@ -10,11 +11,35 @@ def check_range(pattern: list[int], position: int = -1, start_val: int = 0, end_
         print(linux_ping('.'.join(map(str, pattern))))
 
 
-def linux_ping(host):
-    command: list[str] = ['ping', '-c', '1', host]
+def return_range(pattern: list[int], position: int = -1, start_val: int = 0, end_val: int = 1) -> set:
+    if start_val >= end_val:
+        end_val = start_val + 1
+
+    commands: set = set()
+
+    for _i in range(start_val, end_val):
+        pattern[position] = _i
+        commands.add('.'.join(map(str, pattern)))
+
+    return commands
+
+
+def linux_ping(_host):
+    command: list[str] = ['ping', '-c', '1', _host]
     return run(command, capture_output=True, text=True).stdout
 
 
 if __name__ == '__main__':
     ipPattern: list[int] = [192, 168, 1, 1]
-    check_range(ipPattern, position=-1, start_val=0, end_val=10)
+    # check_range(ipPattern, position=-1, start_val=0, end_val=10)
+    ipAddresses: set = return_range(ipPattern, end_val=10)
+    pingsResult: set = set()
+    print(len(ipAddresses))
+
+    with ThreadPoolExecutor() as executor:
+        futures: set = {executor.submit(linux_ping, host) for host in ipAddresses}
+        for future in as_completed(futures):
+            pingsResult.add(future.result())
+
+    for result in pingsResult:
+        print(result)
