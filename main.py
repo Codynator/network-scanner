@@ -1,4 +1,4 @@
-from subprocess import run
+from subprocess import run, CalledProcessError, CompletedProcess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -24,9 +24,13 @@ def return_range(pattern: list[int], position: int = -1, start_val: int = 0, end
     return commands
 
 
-def linux_ping(_host):
-    command: list[str] = ['ping', '-c', '1', _host]
-    return run(command, capture_output=True, text=True).stdout
+def linux_ping(_host: str) -> tuple[str, bool]:
+    command: list[str] = ['ping', '-c', '1', '-w', '3', _host]
+    try:
+        output: CompletedProcess = run(command, capture_output=True, text=True, check=True)
+        return (_host, True) if output.returncode == 0 else (_host, False)
+    except CalledProcessError:
+        return _host, False
 
 
 if __name__ == '__main__':
@@ -34,7 +38,6 @@ if __name__ == '__main__':
     # check_range(ipPattern, position=-1, start_val=0, end_val=10)
     ipAddresses: set = return_range(ipPattern, end_val=10)
     pingsResult: set = set()
-    print(len(ipAddresses))
 
     with ThreadPoolExecutor() as executor:
         futures: set = {executor.submit(linux_ping, host) for host in ipAddresses}
