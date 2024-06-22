@@ -1,5 +1,8 @@
 import customtkinter as ctk
 from webbrowser import open as wb_open
+from subprocess import run, CalledProcessError, CompletedProcess
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from netaddr import IPSet, IPRange
 
 
 ctk.set_appearance_mode("System")
@@ -17,7 +20,7 @@ class HeaderFrame(ctk.CTkFrame):
 
         self.title = ctk.CTkLabel(self, text="Network Scanner", font=("", 20))
         self.title.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="ew")
-        self.subtitle = ctk.CTkLabel(self, text="Version 0.12")
+        self.subtitle = ctk.CTkLabel(self, text="Version 0.13")
         self.subtitle.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="ew")
 
         self.themeLabel = ctk.CTkLabel(self, text="Current theme:")
@@ -38,6 +41,7 @@ class HeaderFrame(ctk.CTkFrame):
 class MainFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
+        self.root = master
 
         self.columnconfigure((0, 1, 2), weight=1)
 
@@ -61,16 +65,18 @@ class MainFrame(ctk.CTkFrame):
         self.addressesRangeLabel = ctk.CTkLabel(self, text="Designate a range of IP addresses to scan",
                                                 fg_color=("grey80", "grey20"), corner_radius=10)
         self.addressesRangeLabel.grid(row=2, column=0, columnspan=2, padx=10, pady=(10, 0), sticky="we")
-        self.rangeFromEntry = ctk.CTkEntry(self, placeholder_text="from")
+        self.rangeFromEntry = ctk.CTkEntry(self, placeholder_text="from, e.g.: 192.168.1.0")
         self.rangeFromEntry.grid(row=3, column=0, padx=10, pady=10, sticky="we")
-        self.rangeToEntry = ctk.CTkEntry(self, placeholder_text="to")
+        self.rangeFromEntry.insert(0, "192.168.1.0")
+        self.rangeToEntry = ctk.CTkEntry(self, placeholder_text="to, e.g.: 192.168.1.10")
         self.rangeToEntry.grid(row=3, column=1, padx=10, pady=10, sticky="we")
+        self.rangeToEntry.insert(0, "192.168.1.10")
 
         self.resultLabel = ctk.CTkLabel(self, text="")
         self.resultLabel.grid(row=3, column=2, padx=10, pady=10, sticky="we")
 
-        self.scanButton = ctk.CTkButton(self, text="Scan")
-        self.scanButton.grid(row=4, column=1, pady=10, sticky="we")
+        self.scanButton = ctk.CTkButton(self, text="Scan", command=self.start_scan)
+        self.scanButton.grid(row=4, column=1, padx=10, pady=10, sticky="we")
 
     @staticmethod
     def clear_entry(_entry: ctk.CTkEntry) -> None:
@@ -87,6 +93,31 @@ class MainFrame(ctk.CTkFrame):
     def get_command(self) -> list[str]:
         new_command: str = self.previewEntry.get()
         return new_command.split(" ")
+
+    def ping(self, _host: str) -> tuple[str, bool]:
+        command: list[str] = [*self.get_command(), _host]
+
+        try:
+            output: CompletedProcess = run(command, capture_output=True, text=True, check=True)
+            return (_host, True) if output.returncode == 0 else (_host, False)
+        except CalledProcessError:
+            return _host, False
+
+    def start_scan(self) -> None:
+        ip1: str = self.rangeFromEntry.get()
+        ip2: str = self.rangeToEntry.get()
+
+        ip_addresses: IPSet = IPSet(IPRange(ip1, ip2))
+        ip_addresses_set: set = set()
+        for ip in ip_addresses:
+            ip_addresses_set.add(str(ip))
+
+        available_addresses = set()
+
+        for ip_address in ip_addresses_set:
+            available_addresses.add(self.ping(ip_address))
+
+        print(available_addresses)
 
 
 class App(ctk.CTk):
