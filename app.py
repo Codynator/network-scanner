@@ -6,9 +6,8 @@ from resultFrame import ResultFrame
 
 """
 TODO:
-1. each frame class has its own file (in work)
+1. DOCUMENTATION AND MORE COMMENTS!
 2. fix UI
-3. add clearing for ResultFrame after the scan button has been pressed
 """
 
 ctk.set_appearance_mode("System")
@@ -35,16 +34,23 @@ class App(ctk.CTk):
         self.resultFrame = ResultFrame(self, title="List of found IP addresses", fg_color="transparent",
                                        border_width=2, border_color=("grey80", "grey20"))
         self.resultFrame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
+        self.records: list = []
+
+    def clear_records(self) -> None:
+        # Clears resultFrame from labels and buttons
+        for record in self.records:
+            record[0].destroy()
+            record[1].destroy()
+
         self.records = []
 
-    def clear_records(self):
-        ...
-
-    def start_work(self):
-        self.refresh_ui()
+    def start_work(self) -> None:
+        # Start scanning on different thread because it won't interfere with GUI's thread
         Thread(target=self.start_scan).start()
 
     def start_scan(self):
+        self.clear_records()
+
         found_addresses: set = self.mainFrame.start_scan()
 
         for i, address in enumerate(found_addresses):
