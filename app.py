@@ -1,8 +1,18 @@
 import customtkinter as ctk
 from webbrowser import open as wb_open
 from subprocess import run, CalledProcessError, CompletedProcess
-# from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Thread
 from netaddr import IPSet, IPRange
+
+"""
+TODO:
+1. each frame class has its own file
+2. fix UI
+3. add multithreading back (so it won't freeze the app) (done)
+4. add progressbar (done)
+5. add clearing for ResultFrame after the scan button has been pressed
+"""
 
 
 ctk.set_appearance_mode("System")
@@ -18,7 +28,7 @@ class HeaderFrame(ctk.CTkFrame):
 
         self.title = ctk.CTkLabel(self, text="Network Scanner", font=("", 20))
         self.title.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="ew")
-        self.subtitle = ctk.CTkLabel(self, text="Version 0.14")
+        self.subtitle = ctk.CTkLabel(self, text="Version 0.15")
         self.subtitle.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="ew")
 
         self.themeLabel = ctk.CTkLabel(self, text="Current theme:")
@@ -68,6 +78,10 @@ class MainFrame(ctk.CTkFrame):
         self.scanButton = ctk.CTkButton(self, text="Scan")
         self.scanButton.grid(row=4, column=1, padx=10, pady=10, sticky="we")
 
+        self.scanProgressbar = ctk.CTkProgressBar(self)
+        self.scanProgressbar.grid(row=5, column=0, columnspan=3, padx=10, pady=10, sticky="we")
+        self.scanProgressbar.set(0)
+
     @staticmethod
     def clear_entry(_entry: ctk.CTkEntry) -> None:
         _entry.delete(0, len(_entry.get()))
@@ -104,10 +118,23 @@ class MainFrame(ctk.CTkFrame):
 
         available_addresses = set()
 
-        for ip_address in ip_addresses_set:
-            new_address = self.ping(ip_address)
-            if new_address[1]:
-                available_addresses.add(new_address[0])
+        self.scanProgressbar.set(0)
+        increase_value_by: float = 1 / len(ip_addresses_set)
+
+        # for ip_address in ip_addresses_set:
+        #     new_address = self.ping(ip_address)
+        #     if new_address[1]:
+        #         available_addresses.add(new_address[0])
+        #
+        #     self.scanProgressbar.set(self.scanProgressbar.get() + increase_value_by)
+
+        with ThreadPoolExecutor() as executor:
+            futures: set = {executor.submit(self.ping, host) for host in ip_addresses_set}
+            for future in as_completed(futures):
+                if future.result()[1]:
+                    available_addresses.add(future.result()[0])
+
+                self.scanProgressbar.set(self.scanProgressbar.get() + increase_value_by)
 
         return available_addresses
 
@@ -123,7 +150,7 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title('Network scanner')
-        self.geometry('800x500')
+        self.geometry('900x520')
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
@@ -133,7 +160,7 @@ class App(ctk.CTk):
         self.mainFrame = MainFrame(self)
         self.mainFrame.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
         self.mainFrame.configure(fg_color="transparent")
-        self.mainFrame.scanButton.configure(command=self.start_scan)
+        self.mainFrame.scanButton.configure(command=self.start_work)
 
         self.resultFrame = ResultFrame(self, title="List of found IP addresses", fg_color="transparent",
                                        border_width=2, border_color=("grey80", "grey20"))
@@ -143,8 +170,12 @@ class App(ctk.CTk):
     def clear_records(self):
         ...
 
+    def start_work(self):
+        self.refresh_ui()
+        Thread(target=self.start_scan).start()
+
     def start_scan(self):
-        found_addresses = self.mainFrame.start_scan()
+        found_addresses: set = self.mainFrame.start_scan()
 
         for i, address in enumerate(found_addresses):
             new_label = ctk.CTkLabel(self.resultFrame, text=f"{address}")
@@ -155,7 +186,9 @@ class App(ctk.CTk):
             new_copy_button.grid(row=i, column=1, padx=0, pady=(5, 0), sticky="w")
             self.records.append([new_label, new_copy_button])
 
-            self.clipboard_append(address)
+    def refresh_ui(self):
+        self.update()
+        self.after(1000, self.refresh_ui)
 
 
 if __name__ == '__main__':
