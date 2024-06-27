@@ -11,7 +11,7 @@ class HeaderFrame(CTkFrame):
 
         self.title = CTkLabel(self, text="Network Scanner", font=("", 20))
         self.title.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="ew")
-        self.subtitle = CTkLabel(self, text="Version 0.17")
+        self.subtitle = CTkLabel(self, text="Version 0.18")
         self.subtitle.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="ew")
 
         self.themeLabel = CTkLabel(self, text="Current theme:")

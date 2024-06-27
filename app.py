@@ -1,20 +1,21 @@
-import customtkinter as ctk
+from customtkinter import CTk, CTkLabel, CTkButton, set_appearance_mode, set_default_color_theme
 from threading import Thread
 from headerFrame import HeaderFrame
 from mainFrame import MainFrame
 from resultFrame import ResultFrame
+from math import ceil
 
 """
 TODO:
 1. DOCUMENTATION AND MORE COMMENTS!
-2. fix UI
+2. fix UI (in progress)
 """
 
-ctk.set_appearance_mode("System")
-ctk.set_default_color_theme("green")
+set_appearance_mode("System")
+set_default_color_theme("green")
 
 
-class App(ctk.CTk):
+class App(CTk):
     def __init__(self):
         super().__init__()
 
@@ -31,9 +32,9 @@ class App(ctk.CTk):
         self.mainFrame.configure(fg_color="transparent")
         self.mainFrame.scanButton.configure(command=self.start_work)
 
-        self.resultFrame = ResultFrame(self, title="List of found IP addresses", fg_color="transparent",
+        self.resultFrame = ResultFrame(self, title="List of found IP addresses", fg_color=("white", "black"),
                                        border_width=2, border_color=("grey80", "grey20"))
-        self.resultFrame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
+        self.resultFrame.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="nsew")
         self.records: list = []
 
     def clear_records(self) -> None:
@@ -52,21 +53,43 @@ class App(ctk.CTk):
         self.clear_records()
 
         found_addresses: set = self.mainFrame.start_scan()
+        self.create_records_grid(found_addresses, 2)
 
-        for i, address in enumerate(found_addresses):
-            new_label = ctk.CTkLabel(self.resultFrame, text=f"{address}")
-            new_label.grid(row=i, column=0, padx=10, pady=(5, 0), sticky="w")
-
-            new_copy_button = ctk.CTkButton(self.resultFrame, text="Copy to clipboard", command=lambda:
-                                            self.clipboard_append(address))
-            new_copy_button.grid(row=i, column=1, padx=0, pady=(5, 0), sticky="w")
-            self.records.append([new_label, new_copy_button])
-
-    def refresh_ui(self):
+    def refresh_ui(self) -> None:
         self.update()
         self.after(1000, self.refresh_ui)
 
+    def clipboard_handler(self, _val):
+        self.clipboard_clear()
+        self.clipboard_append(_val)
+
+    def create_copy_button_handler(self, _val):
+        return lambda: self.clipboard_handler(_val)
+
+    def create_records_grid(self, data: set, cols: int) -> None:
+        parsed_data: list = list(data)
+        rows = ceil(len(parsed_data) / cols)
+        modified_data: list = [parsed_data[i * cols: (i + 1) * cols] for i in range(rows)]
+
+        col_indexes: list = [i for i in range(cols * 2)]
+        self.resultFrame.columnconfigure(tuple(col_indexes), weight=1)
+
+        for _row, _row_list in enumerate(modified_data):
+            for _col, _val in enumerate(_row_list):
+                new_label = CTkLabel(self.resultFrame, text=f"> {_val}", font=("monospace", 12),
+                                     text_color=("green", "green2"))
+                new_label.grid(row=_row, column=_col * 2, padx=10, pady=(5, 0), sticky="w")
+
+                new_copy_button = CTkButton(self.resultFrame, text="Copy",
+                                            command=self.create_copy_button_handler(_val),
+                                            font=("monospace", 12), fg_color="transparent",
+                                            text_color=("black", "white"),
+                                            corner_radius=0,
+                                            hover_color=("green2", "green"))
+                new_copy_button.grid(row=_row, column=_col * 2 + 1, padx=0, pady=(5, 0), sticky="w")
+                self.records.append([new_label, new_copy_button])
+
 
 if __name__ == '__main__':
-    app: ctk.CTk = App()
+    app: CTk = App()
     app.mainloop()

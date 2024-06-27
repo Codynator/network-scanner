@@ -7,7 +7,7 @@ from netaddr import IPSet, IPRange, AddrFormatError
 class MainFrame(CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        self.columnconfigure((0, 1, 2), weight=1)
+        self.columnconfigure(2, weight=1)
 
         self.osLabel = CTkLabel(self, text="Choose your OS:")
         self.osLabel.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="w")
@@ -30,15 +30,15 @@ class MainFrame(CTkFrame):
         self.rangeToEntry.grid(row=3, column=1, padx=10, pady=10, sticky="we")
         self.rangeToEntry.insert(0, "192.168.1.10")
 
-        self.resultLabel = CTkLabel(self, text="")
-        self.resultLabel.grid(row=3, column=2, padx=10, pady=10, sticky="we")
-
         self.scanButton = CTkButton(self, text="Scan")
-        self.scanButton.grid(row=4, column=1, padx=10, pady=10, sticky="we")
+        self.scanButton.grid(row=4, column=0, padx=10, pady=10, sticky="we")
 
         self.scanProgressbar = CTkProgressBar(self)
-        self.scanProgressbar.grid(row=5, column=0, columnspan=3, padx=10, pady=10, sticky="we")
+        self.scanProgressbar.grid(row=4, column=1, columnspan=2, padx=(10, 10), pady=(20, 0), sticky="we")
         self.scanProgressbar.set(0)
+
+        self.scanProgressLabel = CTkLabel(self, text="0%")
+        self.scanProgressLabel.grid(row=4, column=1, columnspan=2, padx=10, pady=(0, 20), sticky="we")
 
     @staticmethod
     def clear_entry(_entry: CTkEntry) -> None:
@@ -66,6 +66,8 @@ class MainFrame(CTkFrame):
             return _host, False
 
     def start_scan(self) -> set:
+        self.scanButton.configure(state="disabled")
+
         ip1: str = self.rangeFromEntry.get()
         ip2: str = self.rangeToEntry.get()
 
@@ -89,6 +91,9 @@ class MainFrame(CTkFrame):
                 if future.result()[1]:
                     available_addresses.add(future.result()[0])
 
-                self.scanProgressbar.set(self.scanProgressbar.get() + increase_value_by)
+                new_value = self.scanProgressbar.get() + increase_value_by
+                self.scanProgressbar.set(new_value)
+                self.scanProgressLabel.configure(text=f"{int(new_value * 100)}%")
 
+        self.scanButton.configure(state="normal")
         return available_addresses
