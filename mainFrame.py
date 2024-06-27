@@ -5,7 +5,10 @@ from netaddr import IPSet, IPRange, AddrFormatError
 
 
 class MainFrame(CTkFrame):
-    def __init__(self, master):
+    """
+    Main frame containing the parameters for application. It is responsible for the scanning process.
+    """
+    def __init__(self, master) -> None:
         super().__init__(master)
         self.columnconfigure(2, weight=1)
 
@@ -65,7 +68,12 @@ class MainFrame(CTkFrame):
         except CalledProcessError:
             return _host, False
 
-    def start_scan(self) -> set:
+    def start_scan(self) -> set[str]:
+        """
+        Gets the set of all IP addresses from given range and then pings them on multiple threads. It also disables the
+        scan button and updates the progressbar.
+        :return: set containing all found IP addresses
+        """
         self.scanButton.configure(state="disabled")
 
         ip1: str = self.rangeFromEntry.get()

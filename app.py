@@ -8,7 +8,7 @@ from math import ceil
 """
 TODO:
 1. DOCUMENTATION AND MORE COMMENTS!
-2. fix UI (in progress)
+2. Option to save result in a file
 """
 
 set_appearance_mode("System")
@@ -16,7 +16,10 @@ set_default_color_theme("green")
 
 
 class App(CTk):
-    def __init__(self):
+    """
+    Core object of the whole application. Combines all frames together and is responsible for scanning process.
+    """
+    def __init__(self) -> None:
         super().__init__()
 
         self.title('Network scanner')
@@ -38,7 +41,11 @@ class App(CTk):
         self.records: list = []
 
     def clear_records(self) -> None:
-        # Clears resultFrame from labels and buttons
+        """
+        Clears the resultFrame from all labels and buttons. Currently, this function can throw errors due to widget
+        removing mechanism, but they have no impact on the performance of the application.
+        :return: None
+        """
         for record in self.records:
             record[0].destroy()
             record[1].destroy()
@@ -46,27 +53,42 @@ class App(CTk):
         self.records = []
 
     def start_work(self) -> None:
-        # Start scanning on different thread because it won't interfere with GUI's thread
+        """
+        Starts the start_scan function on different thread because otherwise it would interfere with CTk thread.
+        :return: None
+        """
         Thread(target=self.start_scan).start()
 
-    def start_scan(self):
+    def start_scan(self) -> None:
+        """
+        Starts the mainFrames method start_scan and changes the appearance of the UI for the duration of scanning.
+        :return: None
+        """
+        self.title("(Scanning...) Network Scanner")
         self.clear_records()
 
         found_addresses: set = self.mainFrame.start_scan()
         self.create_records_grid(found_addresses, 2)
+        self.title("Network Scanner")
 
     def refresh_ui(self) -> None:
         self.update()
         self.after(1000, self.refresh_ui)
 
-    def clipboard_handler(self, _val):
+    def clipboard_handler(self, _val) -> None:
         self.clipboard_clear()
         self.clipboard_append(_val)
 
-    def create_copy_button_handler(self, _val):
+    def create_copy_button_handler(self, _val) -> clipboard_handler:
         return lambda: self.clipboard_handler(_val)
 
     def create_records_grid(self, data: set, cols: int) -> None:
+        """
+        Creates a grid for labels and buttons. Each label has its own button.
+        :param data: 1D set containing all found IP addresses
+        :param cols: amount of columns containing labels in one row (columns for button are created automatically)
+        :return: None
+        """
         parsed_data: list = list(data)
         rows = ceil(len(parsed_data) / cols)
         modified_data: list = [parsed_data[i * cols: (i + 1) * cols] for i in range(rows)]
