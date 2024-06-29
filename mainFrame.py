@@ -1,4 +1,4 @@
-from customtkinter import CTkFrame, CTkLabel, CTkOptionMenu, CTkEntry, CTkButton, CTkProgressBar
+from customtkinter import CTkFrame, CTkLabel, CTkOptionMenu, CTkEntry, CTkButton, CTkProgressBar, CTkCheckBox
 from subprocess import run, CalledProcessError, CompletedProcess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from netaddr import IPSet, IPRange, AddrFormatError
@@ -23,6 +23,9 @@ class MainFrame(CTkFrame):
         self.previewEntry.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="we")
         self.previewEntry.insert(0, "ping -c 1 -w 3")
 
+        self.alwaysSaveResultCheckbox = CTkCheckBox(self, text="Always save result", onvalue=True, offvalue=False)
+        self.alwaysSaveResultCheckbox.grid(row=2, column=3, padx=10, pady=10, sticky="e")
+
         self.addressesRangeLabel = CTkLabel(self, text="Designate a range of IP addresses to scan",
                                             fg_color=("grey80", "grey20"), corner_radius=10)
         self.addressesRangeLabel.grid(row=2, column=0, columnspan=2, padx=10, pady=(10, 0), sticky="we")
@@ -33,15 +36,18 @@ class MainFrame(CTkFrame):
         self.rangeToEntry.grid(row=3, column=1, padx=10, pady=10, sticky="we")
         self.rangeToEntry.insert(0, "192.168.1.10")
 
+        self.saveResultButton = CTkButton(self, text="Save result", state="disabled")
+        self.saveResultButton.grid(row=3, column=3, padx=10, pady=10, sticky="we")
+
         self.scanButton = CTkButton(self, text="Scan")
         self.scanButton.grid(row=4, column=0, padx=10, pady=10, sticky="we")
 
         self.scanProgressbar = CTkProgressBar(self)
-        self.scanProgressbar.grid(row=4, column=1, columnspan=2, padx=(10, 10), pady=(20, 0), sticky="we")
+        self.scanProgressbar.grid(row=4, column=1, columnspan=3, padx=(10, 10), pady=(20, 0), sticky="we")
         self.scanProgressbar.set(0)
 
         self.scanProgressLabel = CTkLabel(self, text="0%")
-        self.scanProgressLabel.grid(row=4, column=1, columnspan=2, padx=10, pady=(0, 20), sticky="we")
+        self.scanProgressLabel.grid(row=4, column=1, columnspan=3, padx=10, pady=(0, 20), sticky="we")
 
     @staticmethod
     def clear_entry(_entry: CTkEntry) -> None:
@@ -103,5 +109,8 @@ class MainFrame(CTkFrame):
                 self.scanProgressbar.set(new_value)
                 self.scanProgressLabel.configure(text=f"{int(new_value * 100)}%")
 
+        self.scanProgressbar.set(1)
+        self.scanProgressLabel.configure(text="100%")
         self.scanButton.configure(state="normal")
+        self.saveResultButton.configure(state="normal")
         return available_addresses

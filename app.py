@@ -4,6 +4,7 @@ from headerFrame import HeaderFrame
 from mainFrame import MainFrame
 from resultFrame import ResultFrame
 from math import ceil
+from datetime import datetime
 
 """
 TODO:
@@ -34,11 +35,13 @@ class App(CTk):
         self.mainFrame.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
         self.mainFrame.configure(fg_color="transparent")
         self.mainFrame.scanButton.configure(command=self.start_work)
+        self.mainFrame.saveResultButton.configure(command=self.save_result)
 
         self.resultFrame = ResultFrame(self, title="List of found IP addresses", fg_color=("white", "black"),
                                        border_width=2, border_color=("grey80", "grey20"))
         self.resultFrame.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="nsew")
         self.records: list = []
+        self.found_addresses: set = set()
 
     def clear_records(self) -> None:
         """
@@ -67,9 +70,12 @@ class App(CTk):
         self.title("(Scanning...) Network Scanner")
         self.clear_records()
 
-        found_addresses: set = self.mainFrame.start_scan()
-        self.create_records_grid(found_addresses, 2)
+        self.found_addresses = self.mainFrame.start_scan()
+        self.create_records_grid(self.found_addresses, 2)
         self.title("Network Scanner")
+
+        if self.mainFrame.alwaysSaveResultCheckbox.get():
+            self.save_result()
 
     def refresh_ui(self) -> None:
         self.update()
@@ -110,6 +116,14 @@ class App(CTk):
                                             hover_color=("green2", "green"))
                 new_copy_button.grid(row=_row, column=_col * 2 + 1, padx=0, pady=(5, 0), sticky="w")
                 self.records.append([new_label, new_copy_button])
+
+    def save_result(self):
+        current_date = datetime.now()
+        new_file_name = f"{current_date:%Y-%m-%d_%H-%M-%S}.txt"
+
+        with open(new_file_name, "w") as file:
+            for address in list(self.found_addresses):
+                file.write(address + "\n")
 
 
 if __name__ == '__main__':
