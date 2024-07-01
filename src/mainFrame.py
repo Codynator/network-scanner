@@ -59,7 +59,7 @@ class MainFrame(CTkFrame):
         if os_name == "Linux":
             self.previewEntry.insert(0, "ping -c 1 -w 3")
         else:
-            self.previewEntry.insert(0, "ping -n 1 -w 3000")
+            self.previewEntry.insert(0, "ping -n 1 -w 3000 -4")
 
     def get_command(self) -> list[str]:
         new_command: str = self.previewEntry.get()
@@ -70,7 +70,10 @@ class MainFrame(CTkFrame):
 
         try:
             output: CompletedProcess = run(command, capture_output=True, text=True, check=True)
-            return (_host, True) if output.returncode == 0 else (_host, False)
+            if "unreachable" in output.stdout.strip().lower() or output.returncode != 0:
+                return _host, False
+
+            return _host, True
         except CalledProcessError:
             return _host, False
 
@@ -103,6 +106,7 @@ class MainFrame(CTkFrame):
             futures: set = {executor.submit(self.ping, host) for host in ip_addresses_set}
             for future in as_completed(futures):
                 if future.result()[1]:
+                    print(f"Found IP: {future.result()[0]}")
                     available_addresses.add(future.result()[0])
 
                 new_value = self.scanProgressbar.get() + increase_value_by
