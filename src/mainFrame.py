@@ -37,6 +37,13 @@ class MainFrame(CTkFrame):
         self.rangeToEntry.grid(row=3, column=1, padx=10, pady=10, sticky="we")
         self.rangeToEntry.insert(0, "192.168.1.10")
 
+        self.forceLabel = CTkLabel(self, text="Force conversion of the result to IPv6")
+        self.forceLabel.grid(row=2, column=2, padx=10, pady=(10, 0), sticky="we")
+        self.forceOptionMenu = CTkOptionMenu(self, values=[
+            "Don't force (default)", "Compressed", "Expanded (Shortened)", "Expanded"
+        ])
+        self.forceOptionMenu.grid(row=3, column=2, padx=10, pady=(0, 10), sticky="we")
+
         self.saveResultButton = CTkButton(self, text="Save result", state="disabled")
         self.saveResultButton.grid(row=3, column=3, padx=10, pady=10, sticky="we")
 
@@ -61,7 +68,7 @@ class MainFrame(CTkFrame):
         if os_name == "Linux":
             self.previewEntry.insert(0, "ping -c 1 -w 3")
         else:
-            self.previewEntry.insert(0, "ping -n 1 -w 3000 -4")
+            self.previewEntry.insert(0, "ping -n 1 -w 3000")
 
     def get_command(self) -> list[str]:
         new_command: str = self.previewEntry.get()
@@ -72,7 +79,8 @@ class MainFrame(CTkFrame):
 
         try:
             output: CompletedProcess = run(command, capture_output=True, text=True, check=True)
-            if "unreachable" in output.stdout.strip().lower() or output.returncode != 0:
+            output_string = output.stdout.strip().lower()
+            if "unreachable" in output_string or "100% loss" in output_string or output.returncode != 0:
                 return _host, False
 
             return _host, True
@@ -101,7 +109,7 @@ class MainFrame(CTkFrame):
         for ip in ip_addresses:
             ip_addresses_set.add(str(ip))
 
-        available_addresses = set()
+        available_addresses: set = set()
 
         increase_value_by: float = 1 / len(ip_addresses_set)
 
@@ -109,10 +117,9 @@ class MainFrame(CTkFrame):
             futures: set = {executor.submit(self.ping, host) for host in ip_addresses_set}
             for future in as_completed(futures):
                 if future.result()[1]:
-                    print(f"Found IP: {future.result()[0]}")
                     available_addresses.add(future.result()[0])
 
-                new_value = self.scanProgressbar.get() + increase_value_by
+                new_value: float = self.scanProgressbar.get() + increase_value_by
                 self.scanProgressbar.set(new_value)
                 self.scanProgressLabel.configure(text=f"{int(new_value * 100)}%")
 
@@ -121,3 +128,43 @@ class MainFrame(CTkFrame):
         self.scanButton.configure(state="normal")
         self.saveResultButton.configure(state="normal")
         return available_addresses
+
+    @staticmethod
+    def convert_ipv4_to_ipv6(ipv4_address: str, _type: str = "") -> str:
+        num_list: list[int] = list(map(int, ipv4_address.split(".")))
+
+        result: str = ""
+        if _type.lower() == "compressed":
+            result = "::ffff:{:01x}{:02x}:{:01x}{:02x}"
+        elif _type.lower() == "shortened":
+            result = "0:0:0:0:0:ffff:{:02x}{:02x}:{:02x}{:02x}"
+        elif _type.lower() == "expanded":
+            result = "0000:" * 5 + "ffff:{:02x}{:02x}:{:02x}{:02x}"
+        return result.format(*num_list)
+
+    @staticmethod
+    def recognize_format(_address: str) -> str:
+        _format: str = ""
+        if ":" not in _address:
+            _format = "IPv4"
+        elif "::" in _address:
+            _format = "compressed"
+        elif ":" in _address[4]:
+            _format = "expanded"
+        else:
+            _format = "shortened"
+
+        return _format
+
+    def match_formats(self, _ip1, _ip2):
+        ip1_format = self.recognize_format(_ip1)
+        ip2_format = self.recognize_format(_ip2)
+
+        if ip1_format == ip2_format:
+            return [_ip1, _ip2]
+
+        if ip2_format == "IPv4":
+            if ip1_format == "compressed":
+                _ip2 = self.convert_ipv4_to_ipv6(_ip2, "compressed")
+
+

@@ -21,6 +21,7 @@ class App(CTk):
 
         self.title('Network scanner')
         self.geometry('900x520')
+        self.minsize(800, 500)
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.monoFont = CTkFont(family=get_mono_font(), size=12)
