@@ -2,6 +2,7 @@ from customtkinter import CTkFrame, CTkLabel, CTkOptionMenu, CTkEntry, CTkButton
 from subprocess import run, CalledProcessError, CompletedProcess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from netaddr import IPSet, IPRange, AddrFormatError
+from OSadaptationHandler import get_os_list
 
 
 class MainFrame(CTkFrame):
@@ -14,14 +15,14 @@ class MainFrame(CTkFrame):
 
         self.osLabel = CTkLabel(self, text="Choose your OS:")
         self.osLabel.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="w")
-        self.osMenu = CTkOptionMenu(self, values=['Linux', 'Windows'], command=self.set_preview_command)
+        self.osMenu = CTkOptionMenu(self, values=get_os_list(), command=self.set_preview_command)
         self.osMenu.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="we")
 
         self.previewLabel = CTkLabel(self, text="Command preview:")
         self.previewLabel.grid(row=0, column=1, padx=10, pady=(10, 0), sticky="w")
         self.previewEntry = CTkEntry(self)
         self.previewEntry.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="we")
-        self.previewEntry.insert(0, "ping -c 1 -w 3")
+        self.set_preview_command(get_os_list()[0])
 
         self.alwaysSaveResultCheckbox = CTkCheckBox(self, text="Always save result", onvalue=True, offvalue=False)
         self.alwaysSaveResultCheckbox.grid(row=2, column=3, padx=10, pady=10, sticky="e")
@@ -51,7 +52,8 @@ class MainFrame(CTkFrame):
 
     @staticmethod
     def clear_entry(_entry: CTkEntry) -> None:
-        _entry.delete(0, len(_entry.get()))
+        if len(_entry.get()) != 0:
+            _entry.delete(0, len(_entry.get()))
 
     def set_preview_command(self, os_name: str) -> None:
         self.clear_entry(self.previewEntry)
@@ -84,6 +86,8 @@ class MainFrame(CTkFrame):
         :return: set containing all found IP addresses
         """
         self.scanButton.configure(state="disabled")
+        self.scanProgressbar.set(0)
+        self.scanProgressLabel.configure(text="0%")
 
         ip1: str = self.rangeFromEntry.get()
         ip2: str = self.rangeToEntry.get()
@@ -99,7 +103,6 @@ class MainFrame(CTkFrame):
 
         available_addresses = set()
 
-        self.scanProgressbar.set(0)
         increase_value_by: float = 1 / len(ip_addresses_set)
 
         with ThreadPoolExecutor() as executor:

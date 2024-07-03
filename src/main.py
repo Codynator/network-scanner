@@ -1,16 +1,12 @@
-from customtkinter import CTk, CTkLabel, CTkButton, set_appearance_mode, set_default_color_theme
+from customtkinter import CTk, CTkLabel, CTkButton, set_appearance_mode, set_default_color_theme, CTkFont
 from threading import Thread
 from headerFrame import HeaderFrame
 from mainFrame import MainFrame
 from resultFrame import ResultFrame
 from math import ceil
 from datetime import datetime
+from OSadaptationHandler import get_mono_font
 
-"""
-TODO:
-1. DOCUMENTATION AND MORE COMMENTS!
-2. Option to save result in a file
-"""
 
 set_appearance_mode("System")
 set_default_color_theme("green")
@@ -27,6 +23,7 @@ class App(CTk):
         self.geometry('900x520')
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
+        self.monoFont = CTkFont(family=get_mono_font(), size=12)
 
         self.headerFrame = HeaderFrame(self)
         self.headerFrame.grid(row=0, column=0, padx=0, rowspan=2, pady=0, sticky="nsew")
@@ -104,13 +101,13 @@ class App(CTk):
 
         for _row, _row_list in enumerate(modified_data):
             for _col, _val in enumerate(_row_list):
-                new_label = CTkLabel(self.resultFrame, text=f"> {_val}", font=("monospace", 12),
+                new_label = CTkLabel(self.resultFrame, text=f"> {_val}", font=self.monoFont,
                                      text_color=("green", "green2"))
                 new_label.grid(row=_row, column=_col * 2, padx=10, pady=(5, 0), sticky="w")
 
                 new_copy_button = CTkButton(self.resultFrame, text="Copy",
                                             command=self.create_copy_button_handler(_val),
-                                            font=("monospace", 12), fg_color="transparent",
+                                            font=self.monoFont, fg_color="transparent",
                                             text_color=("black", "white"),
                                             corner_radius=0,
                                             hover_color=("green2", "green"))
@@ -119,7 +116,7 @@ class App(CTk):
 
     def save_result(self):
         current_date = datetime.now()
-        new_file_name = f"{current_date:%Y-%m-%d_%H-%M-%S}.txt"
+        new_file_name = f"network_scan_{current_date:%Y-%m-%d_%H-%M-%S}.txt"
 
         with open(new_file_name, "w") as file:
             for address in list(self.found_addresses):
