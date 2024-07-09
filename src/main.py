@@ -69,6 +69,16 @@ class App(CTk):
         self.clear_records()
 
         self.found_addresses = self.mainFrame.start_scan()
+
+        if _format := self.mainFrame.get_format():
+            formatted_addresses: set = set()
+
+            for address in self.found_addresses:
+                address = self.mainFrame.convert_to_ipv6(address, _format)
+                formatted_addresses.add(address)
+
+            self.found_addresses = set(formatted_addresses)
+
         self.create_records_grid(self.found_addresses, 2)
         self.title("Network Scanner")
 

@@ -130,8 +130,11 @@ class MainFrame(CTkFrame):
         return available_addresses
 
     @staticmethod
-    def convert_ipv4_to_ipv6(ipv4_address: str, _type: str = "") -> str:
-        num_list: list[int] = list(map(int, ipv4_address.split(".")))
+    def convert_to_ipv6(unformatted_address: str, _type: str = "") -> str:
+        if "::ffff:" in unformatted_address:
+            unformatted_address = unformatted_address[7::]
+
+        num_list: list[int] = list(map(int, unformatted_address.split(".")))
 
         result: str = ""
         if _type.lower() == "compressed":
@@ -142,29 +145,12 @@ class MainFrame(CTkFrame):
             result = "0000:" * 5 + "ffff:{:02x}{:02x}:{:02x}{:02x}"
         return result.format(*num_list)
 
-    @staticmethod
-    def recognize_format(_address: str) -> str:
-        _format: str = ""
-        if ":" not in _address:
-            _format = "IPv4"
-        elif "::" in _address:
-            _format = "compressed"
-        elif ":" in _address[4]:
-            _format = "expanded"
-        else:
-            _format = "shortened"
+    def get_format(self) -> str:
+        raw_value: str = self.forceOptionMenu.get().lower()
 
-        return _format
-
-    def match_formats(self, _ip1, _ip2):
-        ip1_format = self.recognize_format(_ip1)
-        ip2_format = self.recognize_format(_ip2)
-
-        if ip1_format == ip2_format:
-            return [_ip1, _ip2]
-
-        if ip2_format == "IPv4":
-            if ip1_format == "compressed":
-                _ip2 = self.convert_ipv4_to_ipv6(_ip2, "compressed")
-
-
+        if "compressed" in raw_value:
+            return "compressed"
+        elif "shortened" in raw_value:
+            return "shortened"
+        elif "expanded" in raw_value:
+            return "expanded"
