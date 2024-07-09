@@ -6,6 +6,7 @@ from resultFrame import ResultFrame
 from math import ceil
 from datetime import datetime
 from OSadaptationHandler import get_mono_font
+from tkinter import PhotoImage
 
 
 set_appearance_mode("System")
@@ -22,6 +23,7 @@ class App(CTk):
         self.title('Network scanner')
         self.geometry('900x520')
         self.minsize(800, 500)
+        self.iconphoto(True, PhotoImage(file="../public/logo.png"))
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.monoFont = CTkFont(family=get_mono_font(), size=12)
