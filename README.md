@@ -1,12 +1,10 @@
-<figcaption style="text-align: center">
-    <img src="./public/logo.png">
-</figcaption>
+![logo](./public/logo.png)
 
 
 # Network Scanner
 
 An easy-to-use network scanner that pings IP addresses from designated range. Supports both IPv4 and IPv6.
-Supports Linux and Windows (has been tested on Ubuntu 24.04 and Windows 10 and Windows 11). 
+Runs Linux and Windows (has been tested on Ubuntu 24.04 and Windows 10 and Windows 11). 
 GUI created using [CustomTkinter](https://customtkinter.tomschimansky.com/) module.
 
 ![example 1](./public/dark_theme.png)
@@ -15,16 +13,16 @@ GUI created using [CustomTkinter](https://customtkinter.tomschimansky.com/) modu
 ## Getting started
 
 1. Download or clone the repository.
-2. Open in terminal repository's localization and run following command to install required modules:  
+2. Navigate to the repository’s location in the terminal and run following command to install required modules:  
  `pip install -r requirements.txt`  
   **You can delete specific module version in `requirements.txt` so that pip installs the latest version.**
-3. You're ready to go!
+3. Now you’re all set!
 
 ## How to use
-1. The scanner should recognize the OS and set a proper ping command by default. If that didn't work you can set the OS
-manually or edit the command visible in the entry on the right.
-2. Designate a range of IP addresses. Entries accept both IPv4 and any IPv6 formats but remember to **use the same format
-in both entries!** Otherwise, the scan may fail.
+1. The scanner automatically detects the operating system and set a proper ping command by default.
+If automatic detection fails, you can manually specify the OS or edit the command visible in the entry on the right.
+2. Designate a range of IP addresses. The input fields accept both IPv4 and IPv6 formats but remember to **use the 
+same format in both entries** (don't mix IPv4 with IPv6 or two different formats of IPv6) Otherwise, the scan may fail.
 3. **Optional:** You can force conversion of found IP addresses to chosen IPv6 format.
 4. Press scan button. If the designated range is large, scanning may take few minutes.
 5. When scan is finished, you can copy each of addresses. You can also save them to txt file by pressing `Save result`
@@ -42,6 +40,6 @@ or uncheck it**.
 
 
 ## Knows issues
-1. When the program is clearing the list of found IP addresses, it can throw *CustomTkinter*'s errors in the terminal.
+1. During the process of clearing the list of found IP addresses, it can throw *CustomTkinter*'s errors in the terminal.
 They shouldn't have any impact on the scanner's workflow.
-2. On Windows: GUI can look glitched.
+2. On Windows, the GUI may appear glitched sometimes.
