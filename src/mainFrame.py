@@ -145,7 +145,7 @@ class MainFrame(CTkFrame):
             result = "0000:" * 5 + "ffff:{:02x}{:02x}:{:02x}{:02x}"
         return result.format(*num_list)
 
-    def get_format(self) -> str:
+    def get_format(self) -> str | bool:
         raw_value: str = self.forceOptionMenu.get().lower()
 
         if "compressed" in raw_value:
@@ -154,3 +154,5 @@ class MainFrame(CTkFrame):
             return "shortened"
         elif "expanded" in raw_value:
             return "expanded"
+        else:
+            return False
