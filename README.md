@@ -3,6 +3,8 @@
 
 # Network Scanner
 
+> Remember, work on the application is still in progress, expect bugs.
+
 An easy-to-use network scanner that pings IP addresses from designated range. Supports both IPv4 and IPv6.
 Runs Linux and Windows (has been tested on Ubuntu 24.04 and Windows 10 and Windows 11). 
 GUI created using [CustomTkinter](https://customtkinter.tomschimansky.com/) module.
@@ -38,6 +40,11 @@ or uncheck it**.
 | -n [number]          | -c [number]   | Number of packets send to host |
 | -w [milliseconds]    | -w [seconds]  | Length of timeout              |
 
+## Settings
+
+- **Strict check** - activates input validation and prevents badly entered IP addresses from blocking scanning 
+capabilities. However, if the validation is not working properly, you can disable it by setting `strict_check`
+to `False` in `conf.yaml`.
 
 ## Knows issues
 1. During the process of clearing the list of found IP addresses, it can throw *CustomTkinter*'s errors in the terminal.
