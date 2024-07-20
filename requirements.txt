@@ -1,7 +1,8 @@
 # pip install -r requirements.txt
-# File generated using pip -m freeze
+# File generated using pip freeze
 # You can delete the module version so that pip downloads the latest version
 customtkinter==5.2.2
 darkdetect==0.8.0
 netaddr==1.3.0
 packaging==24.1
+PyYAML==6.0.2rc1

@@ -3,6 +3,9 @@ from subprocess import run, CalledProcessError, CompletedProcess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from netaddr import IPSet, IPRange, AddrFormatError
 from OSadaptationHandler import get_os_list
+from addressRegex import is_proper_format
+from YAMLHandler import read_from_yaml
+from errorWindow import ErrorWindow
 
 
 class MainFrame(CTkFrame):
@@ -57,6 +60,8 @@ class MainFrame(CTkFrame):
         self.scanProgressLabel = CTkLabel(self, text="0%")
         self.scanProgressLabel.grid(row=4, column=1, columnspan=3, padx=10, pady=(0, 20), sticky="we")
 
+        self.errWindow = None
+
     @staticmethod
     def clear_entry(_entry: CTkEntry) -> None:
         if len(_entry.get()) != 0:
@@ -99,6 +104,13 @@ class MainFrame(CTkFrame):
 
         ip1: str = self.rangeFromEntry.get()
         ip2: str = self.rangeToEntry.get()
+
+        # If strict check is set to True
+        if read_from_yaml("settings")["strict_check"]:
+            if not is_proper_format(ip1) or not is_proper_format(ip2):
+                self.scanButton.configure(state="normal")
+                self.errWindow = ErrorWindow(err_msg="ERROR: Failed to recognize IP format.")
+                return set()
 
         try:
             ip_addresses: IPSet = IPSet(IPRange(ip1, ip2))
@@ -156,3 +168,9 @@ class MainFrame(CTkFrame):
             return "expanded"
         else:
             return False
+
+    def open_err_window(self, msg: str) -> None:
+        if self.errWindow is None or not self.errWindow.winfo_exists():
+            self.errWindow = ErrorWindow(msg)
+        else:
+            self.errWindow.focus()
