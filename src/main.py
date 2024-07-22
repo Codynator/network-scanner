@@ -7,10 +7,11 @@ from math import ceil
 from datetime import datetime
 from OSadaptationHandler import get_mono_font
 from tkinter import PhotoImage
+from YAMLHandler import read_from_yaml
 
 
 set_appearance_mode("System")
-set_default_color_theme("green")
+set_default_color_theme(read_from_yaml("settings")['theme'])
 
 
 class App(CTk):

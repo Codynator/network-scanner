@@ -3,8 +3,6 @@
 
 # Network Scanner
 
-> Remember, work on the application is still in progress, expect bugs.
-
 An easy-to-use network scanner that pings IP addresses from designated range. Supports both IPv4 and IPv6.
 Runs Linux and Windows (has been tested on Ubuntu 24.04, Windows 10 and Windows 11). 
 GUI created using [CustomTkinter](https://customtkinter.tomschimansky.com/) module.
