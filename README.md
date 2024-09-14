@@ -25,7 +25,7 @@ If automatic detection fails, you can manually specify the OS or edit the comman
 same format in both entries** (don't mix IPv4 with IPv6 or two different formats of IPv6) Otherwise, the scan may fail.
 3. **Optional:** You can force conversion of found IP addresses to chosen IPv6 format.
 4. Press scan button. If the designated range is large, scanning may take few minutes.
-5. When scan is finished, you can copy each of addresses. You can also save them to txt file by pressing `Save result`
+5. When scan is finished, you can copy each of addresses. You can also save them to `.txt` file by pressing `Save result`
 button.
 
 > When `Always save result` is checked, the scanner saves the result after each scan. **It doesn't save when you check
@@ -40,9 +40,11 @@ or uncheck it**.
 
 ## Settings
 
-- **Strict check** - activates input validation and prevents badly entered IP addresses from blocking scanning 
-capabilities. However, if the validation is not working properly, you can disable it by setting `strict_check`
-to `False` in `conf.yaml`.
+- **Strict check** - enabled by default, activates input validation and prevents badly entered IP addresses from
+blocking scanning capabilities. However, if the validation is not working properly, you can disable it by
+unchecking the `Strict check` checkbox.
+- **Use multiple threads** - enabled by default, significantly speeds up scanning by allowing the scan process to
+run on multiple threads. If you want to use single thread, disable it.
 
 ## Knows issues
 1. During the process of clearing the list of found IP addresses, it can throw *CustomTkinter*'s errors in the terminal.

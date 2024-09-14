@@ -7,12 +7,11 @@ from math import ceil
 from datetime import datetime
 from OSadaptationHandler import get_mono_font
 from tkinter import PhotoImage
-from YAMLHandler import read_from_yaml
 
 
+VERSION: str = "1.00"
 set_appearance_mode("System")
-set_default_color_theme(read_from_yaml("settings")['theme'])
-
+set_default_color_theme("green") # Available themes: green, blue, dark-blue
 
 class App(CTk):
     """
@@ -31,6 +30,7 @@ class App(CTk):
 
         self.headerFrame = HeaderFrame(self)
         self.headerFrame.grid(row=0, column=0, padx=0, rowspan=2, pady=0, sticky="nsew")
+        self.headerFrame.subtitle.configure(text=f"Version {VERSION}")
 
         self.mainFrame = MainFrame(self)
         self.mainFrame.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
@@ -71,6 +71,18 @@ class App(CTk):
         self.title("(Scanning...) Network Scanner")
         self.clear_records()
 
+        # Checking if checkboxes are selected and updating corresponding variables.
+        if self.headerFrame.settingsFrame.strictCheckCheckBox.get():
+            self.mainFrame.strict_check = True
+        else:
+            self.mainFrame.strict_check = False
+
+        if self.headerFrame.settingsFrame.useMultipleThreadsCheckBox.get():
+            self.mainFrame.use_multiple_threads = True
+        else:
+            self.mainFrame.use_multiple_threads = False
+
+        # This is where magic happens :)
         self.found_addresses = self.mainFrame.start_scan()
 
         if _format := self.mainFrame.get_format():

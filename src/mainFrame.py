@@ -4,7 +4,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from netaddr import IPSet, IPRange, AddrFormatError
 from OSadaptationHandler import get_os_list
 from addressRegex import is_proper_format
-from YAMLHandler import read_from_yaml
 from errorWindow import ErrorWindow
 
 
@@ -61,6 +60,8 @@ class MainFrame(CTkFrame):
         self.scanProgressLabel.grid(row=4, column=1, columnspan=3, padx=10, pady=(0, 20), sticky="we")
 
         self.errWindow = None
+        self.strict_check: bool = True
+        self.use_multiple_threads: bool = True
 
     @staticmethod
     def clear_entry(_entry: CTkEntry) -> None:
@@ -92,6 +93,11 @@ class MainFrame(CTkFrame):
         except CalledProcessError:
             return _host, False
 
+    def update_progressbar(self, increase_by: float):
+        new_value: float = self.scanProgressbar.get() + increase_by
+        self.scanProgressbar.set(new_value)
+        self.scanProgressLabel.configure(text=f"{int(new_value * 100)}%")
+
     def start_scan(self) -> set[str]:
         """
         Gets the set of all IP addresses from given range and then pings them on multiple threads. It also disables the
@@ -105,12 +111,10 @@ class MainFrame(CTkFrame):
         ip1: str = self.rangeFromEntry.get()
         ip2: str = self.rangeToEntry.get()
 
-        # If strict check is set to True
-        if read_from_yaml("settings")["strict_check"]:
-            if not is_proper_format(ip1) or not is_proper_format(ip2):
-                self.scanButton.configure(state="normal")
-                self.errWindow = ErrorWindow(err_msg="ERROR: Failed to recognize IP format.")
-                return set()
+        if self.strict_check and (not is_proper_format(ip1) or not is_proper_format(ip2)):
+            self.scanButton.configure(state="normal")
+            self.errWindow = ErrorWindow(err_msg="ERROR: Failed to recognize IP format.")
+            return set()
 
         try:
             ip_addresses: IPSet = IPSet(IPRange(ip1, ip2))
@@ -125,15 +129,24 @@ class MainFrame(CTkFrame):
 
         increase_value_by: float = 1 / len(ip_addresses_set)
 
-        with ThreadPoolExecutor() as executor:
-            futures: set = {executor.submit(self.ping, host) for host in ip_addresses_set}
-            for future in as_completed(futures):
-                if future.result()[1]:
-                    available_addresses.add(future.result()[0])
+        if self.use_multiple_threads:
+            # Scan on all available threads.
+            with ThreadPoolExecutor() as executor:
+                futures: set = {executor.submit(self.ping, host) for host in ip_addresses_set}
+                for future in as_completed(futures):
+                    if future.result()[1]:
+                        available_addresses.add(future.result()[0])
 
-                new_value: float = self.scanProgressbar.get() + increase_value_by
-                self.scanProgressbar.set(new_value)
-                self.scanProgressLabel.configure(text=f"{int(new_value * 100)}%")
+                    self.update_progressbar(increase_value_by)
+        else:
+            # Scan on single thread
+            for host in ip_addresses_set:
+                result: tuple = self.ping(host)
+
+                if result[1]:
+                    available_addresses.add(result[0])
+
+                self.update_progressbar(increase_value_by)
 
         self.scanProgressbar.set(1)
         self.scanProgressLabel.configure(text="100%")
@@ -155,6 +168,7 @@ class MainFrame(CTkFrame):
             result = "0:0:0:0:0:ffff:{:02x}{:02x}:{:02x}{:02x}"
         elif _type.lower() == "expanded":
             result = "0000:" * 5 + "ffff:{:02x}{:02x}:{:02x}{:02x}"
+
         return result.format(*num_list)
 
     def get_format(self) -> str | bool:
