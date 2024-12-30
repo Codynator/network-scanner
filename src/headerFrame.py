@@ -62,7 +62,7 @@ class HeaderFrame(CTkFrame):
         self.settingsFrame.grid(row=3, column=0, padx=0, pady=0, sticky="nsew")
         self.settingsFrame.configure(fg_color="transparent")
 
-        self.creditButton = CTkButton(self, text="Created by Codynator", fg_color="transparent",
+        self.creditButton = CTkButton(self, text="Created by\nNataniel Krzempek", fg_color="transparent",
                                       text_color=("black", "white"), command=lambda:
                                       wb_open("https://github.com/Codynator/network-scanner", new=2))
         self.creditButton.grid(row=7, column=0, padx=10, pady=10, sticky="ew")

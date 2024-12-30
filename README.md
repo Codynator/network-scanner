@@ -50,3 +50,4 @@ run on multiple threads. If you want to use single thread, disable it.
 1. During the process of clearing the list of found IP addresses, it can throw *CustomTkinter*'s errors in the terminal.
 They shouldn't have any impact on the scanner's workflow.
 2. On Windows, the GUI may appear glitched sometimes.
+3. On Windows, the icon doesn't show up.

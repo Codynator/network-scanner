@@ -48,18 +48,21 @@ class MainFrame(CTkFrame):
         self.saveResultButton = CTkButton(self, text="Save result", state="disabled")
         self.saveResultButton.grid(row=3, column=3, padx=10, pady=10, sticky="we")
 
-        self.scanButton = CTkButton(self, text="Scan")
-        self.scanButton.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky="we")
+        self.spaceLabel1 = CTkLabel(self, text="")
+        self.spaceLabel1.grid(row=4, column=0)
 
-        self.spaceLabel = CTkLabel(self, text="")
-        self.spaceLabel.grid(row=5, column=0)
+        self.scanButton = CTkButton(self, text="Scan")
+        self.scanButton.grid(row=5, column=1, columnspan=2, padx=50, pady=10, sticky="we")
+
+        self.spaceLabel2 = CTkLabel(self, text="")
+        self.spaceLabel2.grid(row=6, column=0)
 
         self.scanProgressbar = CTkProgressBar(self)
-        self.scanProgressbar.grid(row=6, column=0, columnspan=4, padx=(10, 10), pady=(20, 0), sticky="we")
+        self.scanProgressbar.grid(row=7, column=0, columnspan=4, padx=(10, 10), pady=(20, 0), sticky="we")
         self.scanProgressbar.set(0)
 
         self.scanProgressLabel = CTkLabel(self, text="0%")
-        self.scanProgressLabel.grid(row=6, column=0, columnspan=4, padx=10, pady=(0, 20), sticky="we")
+        self.scanProgressLabel.grid(row=7, column=0, columnspan=4, padx=10, pady=(0, 20), sticky="we")
 
         self.errWindow = None
         self.strict_check: bool = True

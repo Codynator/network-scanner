@@ -9,7 +9,7 @@ from OSadaptationHandler import get_mono_font
 from tkinter import PhotoImage
 
 
-VERSION: str = "1.01"
+VERSION: str = "1.02"
 set_appearance_mode("System")
 set_default_color_theme("green") # Available themes: green, blue, dark-blue
 
@@ -40,7 +40,7 @@ class App(CTk):
 
         # TAB VIEW
         self.tabview = CTkTabview(self)
-        self.tabview.grid(row=0, column=1, padx=10, pady=10, sticky="n")
+        self.tabview.grid(row=0, column=1, padx=10, pady=0, sticky="n")
         self.tabview.configure(fg_color="transparent", height=self._HEIGHT)
 
         self.tabview.add("Scan")
@@ -58,8 +58,8 @@ class App(CTk):
         self.resultFrame = ResultFrame(self.tabview.tab("Result"), title="List of found IP addresses",
                                        fg_color=("white", "black"), border_width=2, border_color=("grey80", "grey20"))
         self.resultFrame.grid(row=0, column=0,sticky="nsew")
-        self.resultFrame.configure(width=self._TABVIEW_WIDGET_WIDTH, height=self._HEIGHT)
-        self.records: set = set()
+        self.resultFrame.configure(width=self._TABVIEW_WIDGET_WIDTH - 100, height=self._HEIGHT - 110)
+        self.records: list = []
         self.found_addresses: list = []
 
     def clear_records(self) -> None:
@@ -151,7 +151,7 @@ class App(CTk):
                                      text_color=("green", "green2"))
                 new_label.grid(row=_row, column=_col * 2, padx=10, pady=(5, 0), sticky="w")
 
-                new_copy_button = CTkButton(self.resultFrame, text="Copy",
+                new_copy_button = CTkButton(self.resultFrame, text="<  Copy  >",
                                             command=self.create_copy_button_handler(_val),
                                             font=self.monoFont, fg_color="transparent",
                                             text_color=("black", "white"),

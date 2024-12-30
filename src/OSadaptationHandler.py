@@ -1,5 +1,6 @@
 from platform import system
 
+
 os_name: str = system()
 mono_font_family: str = "Cascadia Mono" if os_name == "Windows" else "Monospace"
 os_list: list = ["Windows", "Linux"] if os_name == "Windows" else ["Linux", "Windows"]
