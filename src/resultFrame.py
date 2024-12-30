@@ -9,3 +9,6 @@ class ResultFrame(CTkScrollableFrame):
     def __init__(self, master, title, **kwargs) -> None:
         super().__init__(master, label_text=title, label_font=(get_mono_font(), 16), label_fg_color="transparent",
                          **kwargs)
+
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)

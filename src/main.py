@@ -1,4 +1,4 @@
-from customtkinter import CTk, CTkLabel, CTkButton, set_appearance_mode, set_default_color_theme, CTkFont
+from customtkinter import CTk, CTkLabel, CTkButton, set_appearance_mode, set_default_color_theme, CTkFont, CTkTabview
 from threading import Thread
 from headerFrame import HeaderFrame
 from mainFrame import MainFrame
@@ -9,9 +9,10 @@ from OSadaptationHandler import get_mono_font
 from tkinter import PhotoImage
 
 
-VERSION: str = "1.00"
+VERSION: str = "1.01"
 set_appearance_mode("System")
 set_default_color_theme("green") # Available themes: green, blue, dark-blue
+
 
 class App(CTk):
     """
@@ -19,30 +20,47 @@ class App(CTk):
     """
     def __init__(self) -> None:
         super().__init__()
+        self._WIDTH: int = 1000
+        self._HEIGHT: int = 520
+        self._HEADER_FRAME_WIDTH: int = int(self._WIDTH * 0.15)
+        self._TABVIEW_WIDGET_WIDTH: int = self._WIDTH - self._HEADER_FRAME_WIDTH
 
         self.title('Network scanner')
-        self.geometry('900x520')
+        self.geometry(f"{self._WIDTH}x{self._HEIGHT}")
         self.minsize(800, 500)
         self.iconphoto(True, PhotoImage(file="../public/logo.png"))
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.monoFont = CTkFont(family=get_mono_font(), size=12)
 
+        # HEADER FRAME
         self.headerFrame = HeaderFrame(self)
         self.headerFrame.grid(row=0, column=0, padx=0, rowspan=2, pady=0, sticky="nsew")
-        self.headerFrame.subtitle.configure(text=f"Version {VERSION}")
+        self.headerFrame.subtitle.configure(text=f"Version {VERSION}", width=self._HEADER_FRAME_WIDTH)
 
-        self.mainFrame = MainFrame(self)
-        self.mainFrame.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
-        self.mainFrame.configure(fg_color="transparent")
+        # TAB VIEW
+        self.tabview = CTkTabview(self)
+        self.tabview.grid(row=0, column=1, padx=10, pady=10, sticky="n")
+        self.tabview.configure(fg_color="transparent", height=self._HEIGHT)
+
+        self.tabview.add("Scan")
+        self.tabview.add("Result")
+        self.tabview.set("Scan")
+
+        # MAIN FRAME
+        self.mainFrame = MainFrame(self.tabview.tab("Scan"))
+        self.mainFrame.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+        self.mainFrame.configure(fg_color="transparent", width=self._TABVIEW_WIDGET_WIDTH, height=self._HEIGHT)
         self.mainFrame.scanButton.configure(command=self.start_work)
         self.mainFrame.saveResultButton.configure(command=self.save_result)
 
-        self.resultFrame = ResultFrame(self, title="List of found IP addresses", fg_color=("white", "black"),
-                                       border_width=2, border_color=("grey80", "grey20"))
-        self.resultFrame.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="nsew")
-        self.records: list = []
-        self.found_addresses: set = set()
+        # RESULT FRAME
+        self.resultFrame = ResultFrame(self.tabview.tab("Result"), title="List of found IP addresses",
+                                       fg_color=("white", "black"), border_width=2, border_color=("grey80", "grey20"))
+        self.resultFrame.grid(row=0, column=0,sticky="nsew")
+        self.resultFrame.configure(width=self._TABVIEW_WIDGET_WIDTH, height=self._HEIGHT)
+        self.records: set = set()
+        self.found_addresses: list = []
 
     def clear_records(self) -> None:
         """
@@ -92,13 +110,15 @@ class App(CTk):
                 address = self.mainFrame.convert_to_ipv6(address, _format)
                 formatted_addresses.add(address)
 
-            self.found_addresses = set(formatted_addresses)
+            self.found_addresses = formatted_addresses
 
         self.create_records_grid(self.found_addresses, 2)
         self.title("Network Scanner")
 
         if self.mainFrame.alwaysSaveResultCheckbox.get():
             self.save_result()
+
+        self.tabview.set("Result")
 
     def refresh_ui(self) -> None:
         self.update()

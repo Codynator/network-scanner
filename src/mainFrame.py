@@ -13,7 +13,6 @@ class MainFrame(CTkFrame):
     """
     def __init__(self, master) -> None:
         super().__init__(master)
-        self.columnconfigure(2, weight=1)
 
         self.osLabel = CTkLabel(self, text="Choose your OS:")
         self.osLabel.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="w")
@@ -39,7 +38,7 @@ class MainFrame(CTkFrame):
         self.rangeToEntry.grid(row=3, column=1, padx=10, pady=10, sticky="we")
         self.rangeToEntry.insert(0, "192.168.1.10")
 
-        self.forceLabel = CTkLabel(self, text="Force conversion of the result to IPv6")
+        self.forceLabel = CTkLabel(self, text="Convert result to IPv6")
         self.forceLabel.grid(row=2, column=2, padx=10, pady=(10, 0), sticky="we")
         self.forceOptionMenu = CTkOptionMenu(self, values=[
             "Don't force (default)", "Compressed", "Expanded (Shortened)", "Expanded"
@@ -50,14 +49,17 @@ class MainFrame(CTkFrame):
         self.saveResultButton.grid(row=3, column=3, padx=10, pady=10, sticky="we")
 
         self.scanButton = CTkButton(self, text="Scan")
-        self.scanButton.grid(row=4, column=0, padx=10, pady=10, sticky="we")
+        self.scanButton.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky="we")
+
+        self.spaceLabel = CTkLabel(self, text="")
+        self.spaceLabel.grid(row=5, column=0)
 
         self.scanProgressbar = CTkProgressBar(self)
-        self.scanProgressbar.grid(row=4, column=1, columnspan=3, padx=(10, 10), pady=(20, 0), sticky="we")
+        self.scanProgressbar.grid(row=6, column=0, columnspan=4, padx=(10, 10), pady=(20, 0), sticky="we")
         self.scanProgressbar.set(0)
 
         self.scanProgressLabel = CTkLabel(self, text="0%")
-        self.scanProgressLabel.grid(row=4, column=1, columnspan=3, padx=10, pady=(0, 20), sticky="we")
+        self.scanProgressLabel.grid(row=6, column=0, columnspan=4, padx=10, pady=(0, 20), sticky="we")
 
         self.errWindow = None
         self.strict_check: bool = True

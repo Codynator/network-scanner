@@ -46,7 +46,7 @@ unchecking the `Strict check` checkbox.
 - **Use multiple threads** - enabled by default, significantly speeds up scanning by allowing the scan process to
 run on multiple threads. If you want to use single thread, disable it.
 
-## Knows issues
+## Known issues
 1. During the process of clearing the list of found IP addresses, it can throw *CustomTkinter*'s errors in the terminal.
 They shouldn't have any impact on the scanner's workflow.
 2. On Windows, the GUI may appear glitched sometimes.

@@ -1,4 +1,4 @@
-from customtkinter import CTkFrame, CTkLabel, CTkOptionMenu, CTkButton, set_appearance_mode, CTkCheckBox
+from customtkinter import CTkFrame, CTkLabel, CTkOptionMenu, CTkButton, set_appearance_mode, CTkCheckBox, set_widget_scaling, set_window_scaling
 from webbrowser import open as wb_open
 
 
@@ -11,7 +11,7 @@ class SettingsFrame(CTkFrame):
 
         self.columnconfigure(0, weight=1)
 
-        self.headerLabel = CTkLabel(self, text="Options", font=("", 16))
+        self.headerLabel = CTkLabel(self, text="Settings", font=("", 16))
         self.headerLabel.grid(row=0, column=0, padx=10, pady=(0, 10), sticky="ew")
 
         self.strictCheckCheckBox = CTkCheckBox(self, text="Strict check", onvalue=True, offvalue=False)
@@ -21,6 +21,26 @@ class SettingsFrame(CTkFrame):
         self.useMultipleThreadsCheckBox = CTkCheckBox(self, text="Use multiple threads", onvalue=True, offvalue=False)
         self.useMultipleThreadsCheckBox.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="ew")
         self.useMultipleThreadsCheckBox.select()
+
+        self.themeLabel = CTkLabel(self, text="Current theme:")
+        self.themeLabel.grid(row=3, column=0, padx=10, pady=0, sticky="ew")
+        self.themeMenu = CTkOptionMenu(self, values=['System', 'Light', 'Dark'], command=self.theme_change)
+        self.themeMenu.grid(row=4, column=0, padx=10, pady=(0, 10), sticky="ew")
+
+        self.scaleLabel = CTkLabel(self, text="Interface scale:")
+        self.scaleLabel.grid(row=5, column=0, padx=10, pady=0, sticky="ew")
+        self.scaleMenu = CTkOptionMenu(self, values=["100%", "110%", "125%", "150%"], command=self.scale_change)
+        self.scaleMenu.grid(row=6, column=0, padx=10, pady=(0, 10), sticky="ew")
+
+    @staticmethod
+    def theme_change(theme: str) -> None:
+        set_appearance_mode(theme)
+
+    @staticmethod
+    def scale_change(scale: str) -> None:
+        parsed_scale: float = int(scale[:-1]) / 100
+        set_widget_scaling(parsed_scale)
+        set_window_scaling(parsed_scale)
 
 
 class HeaderFrame(CTkFrame):
@@ -42,15 +62,7 @@ class HeaderFrame(CTkFrame):
         self.settingsFrame.grid(row=3, column=0, padx=0, pady=0, sticky="nsew")
         self.settingsFrame.configure(fg_color="transparent")
 
-        self.themeLabel = CTkLabel(self, text="Current theme:")
-        self.themeLabel.grid(row=5, column=0, padx=10, pady=0, sticky="ew")
-        self.themeMenu = CTkOptionMenu(self, values=['System', 'Light', 'Dark'], command=self.theme_change)
-        self.themeMenu.grid(row=6, column=0, padx=10, pady=(0, 10), sticky="ew")
         self.creditButton = CTkButton(self, text="Created by Codynator", fg_color="transparent",
                                       text_color=("black", "white"), command=lambda:
                                       wb_open("https://github.com/Codynator/network-scanner", new=2))
         self.creditButton.grid(row=7, column=0, padx=10, pady=10, sticky="ew")
-
-    @staticmethod
-    def theme_change(theme: str) -> None:
-        set_appearance_mode(theme)
